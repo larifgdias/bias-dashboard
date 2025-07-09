@@ -97,7 +97,7 @@ with col1:
     st.pyplot(fig1)
 
 with col2:
-    st.markdown("**Com viés: {tipo_vies}**")
+    st.markdown(f"**Com viés: {tipo_vies}**")
     fig2, ax2 = plt.subplots()
     ax2.bar(df_simulado["Item"], df_simulado["Score com Viés"], color='#ff6666')
     ax2.set_ylim(0, max(df_simulado["Score com Viés"]) * 1.2)
