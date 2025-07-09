@@ -3,67 +3,122 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-st.title("Simulador de Viés em Sistemas Algorítmicos")
+# ---------------------------
+# CONFIGURAÇÃO INICIAL
+# ---------------------------
 
+st.set_page_config(
+    page_title="Simulador de Viés em Recomendação",
+    layout="centered",
+    initial_sidebar_state="expanded"
+)
+
+st.title("🤖 Simulador de Viés em Sistemas de Recomendação")
 st.markdown("""
-Este dashboard interativo simula como diferentes tipos de viés, como o viés de popularidade, gênero e classe, podem influenciar as recomendações feitas por sistemas algorítmicos.  
-Use os controles abaixo para ajustar os parâmetros e visualizar como os dados enviesados impactam os resultados.  
+Este simulador interativo demonstra como **viéses nos dados** — como popularidade, gênero ou classe social —  
+podem afetar os resultados em **sistemas de recomendação algorítmica**.
+
+📌 **Como funciona:**  
+- À esquerda, selecione o tipo de viés que deseja aplicar.  
+- Observe como os scores mudam com a aplicação desse viés.  
+- Compare os gráficos lado a lado para entender o impacto.
+
+🔎 Os dados são simulados apenas para fins educacionais.
 """)
 
-# Sidebar com mini tutorial
-st.sidebar.header("Como usar")
-st.sidebar.markdown("""
-1. Selecione o viés que deseja simular.  
-2. Ajuste os parâmetros relacionados a cada viés.  
-3. Observe os gráficos para entender o impacto do viés nas recomendações.  
-4. Experimente combinar diferentes vieses para ver efeitos cumulativos.
-""")
+# ---------------------------
+# SIMULAÇÃO DOS DADOS BASE
+# ---------------------------
 
-# Seleção do tipo de viés
-bias_type = st.selectbox("Selecione o tipo de viés para simular:", 
-                         ["Viés de Popularidade", "Viés de Gênero", "Viés de Classe"])
-
-# Exemplo simples de parâmetros para cada viés
-if bias_type == "Viés de Popularidade":
-    popularity_threshold = st.slider("Limite mínimo de popularidade para recomendação:", 0, 100, 50)
-elif bias_type == "Viés de Gênero":
-    gender_bias_strength = st.slider("Força do viés de gênero (0 = nenhum, 1 = total):", 0.0, 1.0, 0.5)
-elif bias_type == "Viés de Classe":
-    class_bias_strength = st.slider("Força do viés de classe (0 = nenhum, 1 = total):", 0.0, 1.0, 0.5)
-
-# Simulação simples de dados
 np.random.seed(42)
-data = pd.DataFrame({
-    "Item": [f"Item {i}" for i in range(1, 21)],
-    "Popularidade": np.random.randint(0, 100, 20),
-    "Gênero Preferido": np.random.choice(["Masculino", "Feminino"], 20),
-    "Classe Social": np.random.choice(["Alta", "Média", "Baixa"], 20),
-    "Score": np.random.rand(20)
+itens = [f"Item {i}" for i in range(1, 11)]
+scores_originais = np.random.uniform(2, 5, size=10)
+
+df_base = pd.DataFrame({
+    "Item": itens,
+    "Score Original (sem viés)": scores_originais
 })
 
-# Aplicar filtro/simulação do viés selecionado
-if bias_type == "Viés de Popularidade":
-    filtered_data = data[data["Popularidade"] >= popularity_threshold]
-    st.write(f"Itens com popularidade maior ou igual a {popularity_threshold}:")
-    st.dataframe(filtered_data)
-elif bias_type == "Viés de Gênero":
-    # Simula redução de score para gênero "Feminino" conforme força do viés
-    data["Score Ajustado"] = data.apply(lambda row: row["Score"] * (1 - gender_bias_strength) if row["Gênero Preferido"] == "Feminino" else row["Score"], axis=1)
-    st.write("Scores ajustados considerando viés de gênero:")
-    st.dataframe(data[["Item", "Gênero Preferido", "Score", "Score Ajustado"]])
-elif bias_type == "Viés de Classe":
-    # Simula redução de score para classes baixas conforme força do viés
-    data["Score Ajustado"] = data.apply(lambda row: row["Score"] * (1 - class_bias_strength) if row["Classe Social"] == "Baixa" else row["Score"], axis=1)
-    st.write("Scores ajustados considerando viés de classe:")
-    st.dataframe(data[["Item", "Classe Social", "Score", "Score Ajustado"]])
+# ---------------------------
+# INTERFACE DO USUÁRIO
+# ---------------------------
 
-# Gráfico exemplo: comparação entre score original e ajustado
-if bias_type in ["Viés de Gênero", "Viés de Classe"]:
-    fig, ax = plt.subplots(figsize=(10,5))
-    ax.bar(data["Item"], data["Score"], alpha=0.6, label="Score Original")
-    ax.bar(data["Item"], data["Score Ajustado"], alpha=0.6, label="Score Ajustado")
-    ax.set_xticklabels(data["Item"], rotation=45, ha="right")
-    ax.set_ylabel("Score")
-    ax.set_title(f"Comparação Scores - {bias_type}")
-    ax.legend()
-    st.pyplot(fig)
+st.sidebar.header("⚙️ Escolha um tipo de viés")
+tipo_vies = st.sidebar.selectbox("Tipo de viés para simular:", ["Nenhum", "Popularidade", "Gênero", "Classe"])
+
+# ---------------------------
+# APLICAÇÃO DO VIÉS
+# ---------------------------
+
+df_simulado = df_base.copy()
+
+if tipo_vies == "Popularidade":
+    st.sidebar.markdown("📈 Este viés favorece os itens mais populares.")
+    popularidade = np.linspace(1.5, 0.5, 10)  # decrescente
+    df_simulado["Score com Viés"] = df_base["Score Original (sem viés)"] * popularidade
+
+elif tipo_vies == "Gênero":
+    st.sidebar.markdown("🚻 Este viés favorece itens associados a um determinado gênero.")
+    generos = ['Feminino', 'Masculino'] * 5
+    df_simulado["Gênero"] = generos
+    df_simulado["Score com Viés"] = np.where(
+        df_simulado["Gênero"] == 'Feminino',
+        df_base["Score Original (sem viés)"] * 1.2,
+        df_base["Score Original (sem viés)"] * 0.8
+    )
+
+elif tipo_vies == "Classe":
+    st.sidebar.markdown("💸 Este viés favorece itens consumidos por pessoas de classe mais alta.")
+    classe = ['Alta'] * 5 + ['Baixa'] * 5
+    df_simulado["Classe"] = classe
+    df_simulado["Score com Viés"] = np.where(
+        df_simulado["Classe"] == 'Alta',
+        df_base["Score Original (sem viés)"] * 1.3,
+        df_base["Score Original (sem viés)"] * 0.7
+    )
+
+else:
+    df_simulado["Score com Viés"] = df_base["Score Original (sem viés)"]
+
+# ---------------------------
+# VISUALIZAÇÃO COMPARATIVA
+# ---------------------------
+
+st.markdown("### 📊 Comparação dos Scores")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("**🔹 Sem viés**")
+    fig1, ax1 = plt.subplots()
+    ax1.bar(df_base["Item"], df_base["Score Original (sem viés)"], color='#4da6ff')
+    ax1.set_ylim(0, max(df_simulado["Score com Viés"]) * 1.2)
+    ax1.set_ylabel("Score")
+    st.pyplot(fig1)
+
+with col2:
+    st.markdown(f"**🔸 Com viés: {tipo_vies}**")
+    fig2, ax2 = plt.subplots()
+    ax2.bar(df_simulado["Item"], df_simulado["Score com Viés"], color='#ff6666')
+    ax2.set_ylim(0, max(df_simulado["Score com Viés"]) * 1.2)
+    ax2.set_ylabel("Score")
+    st.pyplot(fig2)
+
+# ---------------------------
+# TABELA DE DADOS
+# ---------------------------
+
+with st.expander("📋 Ver tabela de dados"):
+    st.dataframe(df_simulado)
+
+# ---------------------------
+# RODAPÉ
+# ---------------------------
+
+st.markdown("---")
+st.markdown("""
+📌 Este simulador é uma ferramenta educativa criada para demonstrar como **dados enviesados podem alterar resultados algorítmicos**.  
+Todos os dados são fictícios e gerados aleatoriamente com propósitos didáticos.
+
+Feito com ❤️ por [Larissa Dias](https://github.com/larifgdias)
+""")
