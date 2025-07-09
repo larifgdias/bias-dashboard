@@ -15,15 +15,15 @@ st.set_page_config(
 
 st.title("🤖 Simulador de Viés em Sistemas de Recomendação")
 st.markdown("""
-Este simulador interativo demonstra como **viéses nos dados** — como popularidade, gênero ou classe social —  
+Este simulador interativo demonstra como **viéses nos dados** (Como popularidade, gênero ou classe social) 
 podem afetar os resultados em **sistemas de recomendação algorítmica**.
 
-📌 **Como funciona:**  
+**Como funciona:**  
 - À esquerda, selecione o tipo de viés que deseja aplicar.  
 - Observe como os scores mudam com a aplicação desse viés.  
 - Compare os gráficos lado a lado para entender o impacto.
 
-🔎 Os dados são simulados apenas para fins educacionais.
+Os dados são simulados apenas para fins educacionais.
 """)
 
 # ---------------------------
@@ -43,7 +43,7 @@ df_base = pd.DataFrame({
 # INTERFACE DO USUÁRIO
 # ---------------------------
 
-st.sidebar.header("⚙️ Escolha um tipo de viés")
+st.sidebar.header("Escolha um tipo de viés")
 tipo_vies = st.sidebar.selectbox("Tipo de viés para simular:", ["Nenhum", "Popularidade", "Gênero", "Classe"])
 
 # ---------------------------
@@ -89,7 +89,7 @@ st.markdown("### 📊 Comparação dos Scores")
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("**🔹 Sem viés**")
+    st.markdown("**Sem viés**")
     fig1, ax1 = plt.subplots()
     ax1.bar(df_base["Item"], df_base["Score Original (sem viés)"], color='#4da6ff')
     ax1.set_ylim(0, max(df_simulado["Score com Viés"]) * 1.2)
@@ -97,7 +97,7 @@ with col1:
     st.pyplot(fig1)
 
 with col2:
-    st.markdown(f"**🔸 Com viés: {tipo_vies}**")
+    st.markdown("**Com viés: {tipo_vies}**")
     fig2, ax2 = plt.subplots()
     ax2.bar(df_simulado["Item"], df_simulado["Score com Viés"], color='#ff6666')
     ax2.set_ylim(0, max(df_simulado["Score com Viés"]) * 1.2)
@@ -108,7 +108,7 @@ with col2:
 # TABELA DE DADOS
 # ---------------------------
 
-with st.expander("📋 Ver tabela de dados"):
+with st.expander("Ver tabela de dados"):
     st.dataframe(df_simulado)
 
 # ---------------------------
@@ -117,7 +117,7 @@ with st.expander("📋 Ver tabela de dados"):
 
 st.markdown("---")
 st.markdown("""
-📌 Este simulador é uma ferramenta educativa criada para demonstrar como **dados enviesados podem alterar resultados algorítmicos**.  
+Este simulador é uma ferramenta educativa criada para demonstrar como **dados enviesados podem alterar resultados algorítmicos**.  
 Todos os dados são fictícios e gerados aleatoriamente com propósitos didáticos.
 
 Feito com ❤️ por [Larissa Dias](https://github.com/larifgdias)
